@@ -97,7 +97,6 @@
   (setf (slot-value module 'children) (compute-module-children module)))
 
 (defmethod asdf:component-children ((module module))
-  (when (slot-boundp module 'children)
-    (return-from asdf:component-children (slot-value module 'children)))
-
-  (setf (slot-value module 'children) (compute-module-children module)))
+  (if (slot-boundp module 'children)
+      (slot-value module 'children)
+      (setf (slot-value module 'children) (compute-module-children module))))
