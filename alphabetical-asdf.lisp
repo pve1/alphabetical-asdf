@@ -65,8 +65,7 @@
             (merge-pathnames (make-pathname :name :wild :type :wild)
                              dir)))
          (components
-           (loop :with previous = nil
-                 :for pathname :in component-candidates
+           (loop :for pathname :in component-candidates
                  :if (asdf/driver:directory-pathname-p pathname)
                    :collect (make-instance 'module
                                            :pathname pathname
@@ -81,8 +80,7 @@
                      :collect (make-instance 'asdf:cl-source-file
                                              :pathname pathname
                                              :parent module
-                                             :name (pathname-name pathname))
-                 :do (setf previous pathname))))
+                                             :name (pathname-name pathname)))))
 
     (setf components (sort components #'string<
                            :key (alexandria:compose #'namestring
