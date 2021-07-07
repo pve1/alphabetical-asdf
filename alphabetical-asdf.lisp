@@ -11,13 +11,11 @@
 ;;;;   (asdf:defsystem #:my-system
 ;;;;     :defsystem-depends-on ("alphabetical-asdf")
 ;;;;     :class "alphabetical-asdf:system"
-;;;;     :dependencies ( ... ) ; Whatever systems are required.
+;;;;     :dependencies ( ... ) ;; Whatever systems are required.
 ;;;;
 ;;;; Here's what the directory structure might look like for a simple
-;;;; rogue-like game. Files or directories can be prefixed with either
-;;;; letters or numbers according to personal taste in order to
-;;;; enforce a specific load order. Files without a prefix can be
-;;;; thought of as being loaded in an unspecified order.
+;;;; rogue-like game. Files without a prefix can be thought of as being
+;;;; loaded in an unspecified order.
 ;;;;
 ;;;; nothack.asd (containing the above form)
 ;;;; A-package.lisp
@@ -26,7 +24,7 @@
 ;;;; D-protocols/
 ;;;;     monsters.lisp
 ;;;;     player.lisp
-;;;;     dungeon.lisp
+;;;;     dungeon-generation.lisp
 ;;;; players/
 ;;;;     10-player-macros.lisp
 ;;;;     barbarian.lisp
@@ -52,32 +50,53 @@
 (in-package #:alphabetical-asdf)
 
 (defclass module (asdf:module)
+  (children))
+
+(defclass system (module asdf:system)
   ())
 
-(defclass system (asdf:system module)
-  ())
-
-(defmethod asdf:component-children ((module module))
+(defun compute-module-children (module)
   (let* ((dir (asdf:component-pathname module))
          (component-candidates
            (directory
             (merge-pathnames (make-pathname :name :wild :type :wild)
                              dir)))
          (components
-           (loop :for pathname :in component-candidates
+           (loop :with previous = nil
+                 :for pathname :in component-candidates
                  :if (asdf/driver:directory-pathname-p pathname)
                    :collect (make-instance 'module
                                            :pathname pathname
                                            :parent module
                                            :name (alexandria:last-elt
                                                   (pathname-directory pathname)))
-                 :else :if (let ((type (pathname-type pathname)))
-                             (or (equalp "lisp" type)
-                                 (equalp "lsp" type)
-                                 (equalp "cl" type)))
-                         :collect (make-instance 'asdf:cl-source-file
-                                                 :pathname pathname
-                                                 :parent module
-                                                 :name (pathname-name pathname)))))
-    (sort components #'string< :key (alexandria:compose #'namestring
-                                                        #'asdf:component-pathname))))
+                 :else
+                   :if (let ((type (pathname-type pathname)))
+                         (or (equalp "lisp" type)
+                             (equalp "lsp" type)
+                             (equalp "cl" type)))
+                     :collect (make-instance 'asdf:cl-source-file
+                                             :pathname pathname
+                                             :parent module
+                                             :name (pathname-name pathname))
+                 :do (setf previous pathname))))
+
+    (setf components (sort components #'string<
+                           :key (alexandria:compose #'namestring
+                                                    #'asdf:component-pathname)))
+
+    (loop :for (a b) :on components :by #'cdr
+          :while b
+          :do (setf (asdf:component-sideway-dependencies b)
+                    (list (asdf:component-name a))))
+
+    components))
+
+(defmethod (setf asdf:component-children) (new (module module))
+  (setf (slot-value module 'children) (compute-module-children module)))
+
+(defmethod asdf:component-children ((module module))
+  (when (slot-boundp module 'children)
+    (return-from asdf:component-children (slot-value module 'children)))
+
+  (setf (slot-value module 'children) (compute-module-children module)))
