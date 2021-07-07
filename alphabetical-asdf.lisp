@@ -42,6 +42,9 @@
 ;;;;     dragon.lisp
 ;;;;     gelatinous-cube.lisp
 ;;;;     shopkeeper.lisp
+;;;;
+;;;; Note: After adding, deleting or renaming a file, one must reload
+;;;; the system with :force t, i.e. (asdf:load-system "my-system" :force t).
 
 (defpackage #:alphabetical-asdf
   (:use #:cl)
