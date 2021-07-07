@@ -48,7 +48,7 @@
 
 (defpackage #:alphabetical-asdf
   (:use #:cl)
-  (:export "SYSTEM"))
+  (:export #:system))
 
 (in-package #:alphabetical-asdf)
 
