@@ -64,7 +64,7 @@
            (directory
             (merge-pathnames (make-pathname :name :wild :type :wild)
                              dir)))
-         (components
+         (components ; Lisp files or directories
            (loop :for pathname :in component-candidates
                  :if (asdf/driver:directory-pathname-p pathname)
                    :collect (make-instance 'module
@@ -81,11 +81,12 @@
                                              :pathname pathname
                                              :parent module
                                              :name (pathname-name pathname)))))
-
+    ;; Alphabetical order
     (setf components (sort components #'string<
                            :key (alexandria:compose #'namestring
                                                     #'asdf:component-pathname)))
 
+    ;; ":serial t"
     (loop :for (a b) :on components :by #'cdr
           :while b
           :do (setf (asdf:component-sideway-dependencies b)
