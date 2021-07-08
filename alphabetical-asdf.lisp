@@ -95,6 +95,7 @@
     components))
 
 (defmethod (setf asdf:component-children) (new (module module))
+  (declare (ignore new))
   (setf (slot-value module 'children) (compute-module-children module)))
 
 (defmethod asdf:component-children ((module module))
