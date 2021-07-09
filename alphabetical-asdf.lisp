@@ -60,6 +60,7 @@
 (defclass system (module asdf:system)
   ())
 
+;;; Scans the module's directory for source files and submodules.
 (defun compute-module-children (module)
   (let* ((dir (asdf:component-pathname module))
          (component-candidates
