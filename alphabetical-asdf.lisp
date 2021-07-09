@@ -14,8 +14,10 @@
 ;;;;     :dependencies ( ... ) ;; Whatever systems are required.
 ;;;;
 ;;;; Here's what the directory structure might look like for a simple
-;;;; rogue-like game. Files without a prefix can be thought of as being
-;;;; loaded in an unspecified order.
+;;;; rogue-like game. The names of files or directories can be
+;;;; prefixed according to personal taste to enforce a specific load
+;;;; order. Files without a prefix can be thought of as being loaded
+;;;; in an unspecified order.
 ;;;;
 ;;;; nothack.asd (containing the above form)
 ;;;; A-package.lisp
