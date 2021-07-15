@@ -161,9 +161,6 @@
 
 ;;; ====================================================================
 ;;; ASDF methods
-;;;
-;;; When accessing component-children, make sure we always return the
-;;; scanned components.
 
 (defmethod (setf asdf:component-children) (new (system system))
   (unless (slot-boundp system 'children)
