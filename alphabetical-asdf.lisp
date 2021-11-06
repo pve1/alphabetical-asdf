@@ -11,7 +11,7 @@
 ;;;;   (asdf:defsystem #:my-system
 ;;;;     :defsystem-depends-on ("alphabetical-asdf")
 ;;;;     :class "alphabetical-asdf:system"
-;;;;     :dependencies ( ... ) ;; Whatever systems are required.
+;;;;     :depends-on ( ... ) ;; Whatever systems are required.
 ;;;;
 ;;;; Here's what the directory structure might look like for a simple
 ;;;; rogue-like game. The names of files or directories can be
