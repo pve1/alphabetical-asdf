@@ -11,7 +11,13 @@
 ;;;;   (asdf:defsystem #:my-system
 ;;;;     :defsystem-depends-on ("alphabetical-asdf")
 ;;;;     :class "alphabetical-asdf:system"
+;;;;     :root "src/"
 ;;;;     :depends-on ( ... ) ;; Whatever systems are required.
+;;;;
+;;;; The ROOT parameter indicates where the source files are located,
+;;;; relative to the asd file. If this parameter is omitted, then it
+;;;; is assumed that the source files can be found in the same
+;;;; directory as the asd file.
 ;;;;
 ;;;; Here's what the directory structure might look like for a simple
 ;;;; rogue-like game. The names of files or directories can be
@@ -70,7 +76,8 @@
 ;;; System class
 
 (defclass system (asdf:system)
-  (%children))
+  (%children
+   (root :initarg :root :accessor system-root :initform nil)))
 
 ;;; ====================================================================
 ;;; Scanning for components
@@ -105,11 +112,18 @@
 
 ;;; Sorted list of files that belong to the system.
 (defun system-files (system)
-  (let ((files nil))
+  (let* ((files nil)
+         (component-pathname (asdf:component-pathname system))
+         (root (if (system-root system)
+                   (merge-pathnames (system-root system)
+                                    component-pathname)
+                   component-pathname)))
+    (unless (probe-file root)
+      (error "System root does not exist (~S)." root))
     (walk-directory (lambda (file)
                       (when (lisp-file-p file)
                         (push file files)))
-                    (asdf:component-pathname system))
+                    root)
     (sort files #'string< :key #'namestring)))
 
 ;;; Sorted list of source-file components with serial dependencies
