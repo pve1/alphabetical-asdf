@@ -70,7 +70,7 @@
 ;;; System class
 
 (defclass system (asdf:system)
-  (children)) ; not asdf::children
+  (%children))
 
 ;;; ====================================================================
 ;;; Scanning for components
@@ -136,7 +136,7 @@
 
 ;;; Have the source files changed compared to what was loaded last?
 (defun components-changed-p (system)
-  (let ((current-components (slot-value system 'children))
+  (let ((current-components (slot-value system '%children))
         (components-according-to-filesystem
           (system-components/asdf-cache system)))
     (not (component-list-equal current-components
@@ -163,19 +163,19 @@
 ;;; ASDF methods
 
 (defmethod (setf asdf:component-children) (new (system system))
-  (unless (slot-boundp system 'children)
-    (setf (slot-value system 'children)
+  (unless (slot-boundp system '%children)
+    (setf (slot-value system '%children)
           (system-components/asdf-cache system)))
   new)
 
 (defmethod asdf:component-children ((system system))
-  (if (slot-boundp system 'children)
-      (slot-value system 'children)
-      (setf (slot-value system 'children)
+  (if (slot-boundp system '%children)
+      (slot-value system '%children)
+      (setf (slot-value system '%children)
             (system-components/asdf-cache system))))
 
 (defmethod asdf:operation-done-p ((op asdf:define-op) (system system))
-  (if (slot-boundp system 'children)
+  (if (slot-boundp system '%children)
       ;; If components have changed, we are *not* done.
       (if (components-changed-p/asdf-cache system)
           nil
