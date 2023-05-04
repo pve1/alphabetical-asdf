@@ -77,7 +77,17 @@
 
 (defclass system (asdf:system)
   (%children
-   (root :initarg :root :accessor system-root :initform nil)))
+   (root :initarg :root :accessor system-root :initform nil)
+   (file-class-name :initarg :file-class
+                    :accessor file-class-name
+                    :initform "asdf:cl-source-file")
+   (%file-class-symbol)))
+
+(defmethod file-class-symbol ((system system))
+  (if (slot-boundp system '%file-class-symbol)
+      (slot-value system '%file-class-symbol)
+      (setf (slot-value system '%file-class-symbol)
+            (read-from-string (file-class-name system)))))
 
 ;;; ====================================================================
 ;;; Scanning for components
@@ -103,12 +113,15 @@
           :test #'equalp))
 
 (defun file-to-component (system file)
-  (make-instance 'asdf:cl-source-file
+  (make-instance (file-class-symbol system)
                  :pathname file
                  :parent system
-                 :name (enough-namestring
-                        file
-                        (asdf:component-pathname system))))
+                 :name (namestring
+                        (merge-pathnames
+                         (make-pathname :type :unspecific)
+                         (enough-namestring
+                          file
+                          (asdf:component-pathname system))))))
 
 ;;; Sorted list of files that belong to the system.
 (defun system-files (system)
